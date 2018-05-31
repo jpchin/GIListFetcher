@@ -1,11 +1,9 @@
-
 import urllib.request
 import xml.etree.ElementTree as ET
 import time
 import sys
 
 def fetchGIs(arguments):
-    print(arguments)
     numArgs = len(arguments)
     taxID = ""
     outputFileLocation = ""
@@ -71,7 +69,7 @@ def fetchGIs(arguments):
     #We'll get gi no.s in batches of 500.  This is how many batches there are.
     #If the number of sequences to fetch isn't exactly divisible by 500, set
     #the number of batches to fetch as count / 500 rounded down, + 1
-    if (count % 500) > 0 :
+    if (count % 500) >= 0 :
         batches = int(count / 500) + 1
     #If count is exactly divisible by 500, set the number of batches to count/500
     else:
@@ -110,9 +108,59 @@ def fetchGIs(arguments):
             time.sleep(delay)
 
 if __name__ == "__main__":
-    taxid = input("Please type a taxID to search: ")
-    outputFileLocation = input("Please type an output file location: ")
-    apiKeyLocation = input("If you have an eUtils API key please type the location of the file here\
-, otherwise hit enter to skip: ")
-    arguments = ["-taxid", taxid, "-out", outputFileLocation, "-api", apiKeyLocation]
+
+    #Stuff for file selection dialogue boxes:
+    import tkinter as tk
+    from tkinter import filedialog
+    root = tk.Tk()
+    root.withdraw()
+
+    #Get a taxID to search
+    taxid = input("\nPlease type a taxID to search: ")
+
+    #Get a file location to save the output data
+    gettingLocation = True
+    while (gettingLocation == True):
+        print("\nPlease choose an output file location and file name: ")
+        outputFileLocation = filedialog.asksaveasfilename()
+        try:
+            file = open(outputFileLocation,"w")
+            gettingLocation = False
+        except IOError:
+            print("Sorry, I'm unable to open that file location.")
+
+
+    #Ask for an api key
+    gettingKey = True
+    apiKeyLocation = ""
+    while (gettingKey == True):
+        apiInput = input("\nDo you have an NCBI eTools API key?  This is not\
+ required but speeds up the rate at which requests can be made.  If you have one\
+ type 'y', otherwise type 'n' to skip.")
+        if (apiInput == "n"):
+            gettingKey = False
+        elif (apiInput == "y"):
+            print("\nPlease select a file containing your API key: it should be\
+ a plain text document with any name containing ONLY your key.")
+            apiKeyLocation = filedialog.askopenfilename()
+            try:
+                if (apiKeyLocation != ""):
+                    file = open(outputFileLocation,"r")
+                    gettingKey = False
+                else:
+                    print("Sorry, I'm unable to open that file.")
+            except IOError:
+                print("Sorry, I'm unable to open that file.")
+                pass
+        else:
+            print("\nSorry, I didn't recognise that.  Please type 'y' if you\
+have an API key or 'n' if you don't.")
+    
+    #Use the gathered information to create a list of arguments
+    arguments = ["-taxid", taxid, "-out", outputFileLocation]
+    #If an api key was provided, add that too
+    if (apiKeyLocation != ""):
+        arguments += ["-api", apiKeyLocation]
+
+    #Call the fetchGIs function with "arguments" as arguments
     fetchGIs(arguments)
