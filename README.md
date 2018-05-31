@@ -3,18 +3,13 @@ Get all proteins of a GI from NCBI using a taxon number
 
 
 A script to take an input taxon number and fetch all proteins for that
-organism from the NCBI protein database.  NCBI state that this sort of
-operation is most efficient when you request the data to be posted to their
-History server first, and then download that data in batches.  This script
-is intended to be run from the command line, with the taxon number as the first
-argument, and the output file location as the second
-(e.g. pthon3 GIListFetcher.py 2157 C:\Users\user\Desktop\allArchaea.gi)
+taxon from the NCBI protein database.  Has an option for providing an NCBI E Utilities API key for faster data download, or falls back to slower downloads if one isn't present.
 
+This script was written in Python3 and **requires** an internet connection, but does not use any modules from outside the Python standard library.
 
+CURRENT STATE:
+
+It works, but I can think of several errors it won't handle gracefully, and there are probably a lot of bugs to be irons out.
 
 TODO:
-* Clean up comments to be more clear
-* Make it parse the command line arguments properly so that they can be
-entered in any order, and fail gracefully if an invalid value is given
-* Add the possibility of API numbers being added, and if so allow a faster
-rate of data requests (See the NCBI eUtilities manual for details)
+* Resilience and bugfixing
