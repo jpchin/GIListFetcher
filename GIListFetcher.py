@@ -135,9 +135,7 @@ have an API key or 'n' if you don't.")
     with urllib.request.urlopen(url) as response:
             #For each line in response, decode it from binary to UTF-8 text and
             #append to the xmlOutput string
-            for line in response:
-                line = line.decode("utf-8")
-                xmlOutput += line
+            xmlOutput = response.read().decode("utf-8")
 
     #Use the XML parser to find the root of the XML tree
     root = ET.fromstring(xmlOutput)
@@ -173,29 +171,26 @@ have an API key or 'n' if you don't.")
     # Fetch the requested data in batches of 500, append these to the output file #
     ###############################################################################
 
+    url = urlBase + "efetch.fcgi?db=protein&WebEnv="  + webEnv +\
+        "&query_key=" + queryKey + "&retmax=" + "500&rettype=gi&retmode=text"
+
+    if (apiKey != ""):
+        url += "&api_key=" + apiKey
+
+    url += "&retstart="
+
     #Open the output file ready for data
     with open(outputFileLocation, "a") as file:
         #For each batch
         for x in range (0, batches):
             #Print an info string and then ask for the GI data
-            print("Fetching records " + str(x * 500) + " to " + str((x*500) + 499)\
-                + " of " + str(count) + " (" +\
-                str(round((((x*500) + 499) / count)*100,2)) + " % complete)")
-        
-            request = urlBase + "efetch.fcgi?db=protein&WebEnv="  + webEnv +\
-                "&query_key=" + queryKey + "&retstart=" + str(x * 500) + "&retmax="\
-                + "500&rettype=gi&retmode=text"
-
-            if (apiKey != ""):
-                request += "&api_key=" + apiKey
+            print("Fetching records, " + str((x / batches) * 100) + " % complete)")
         
             #Open the HTTP response as "response"
-            with urllib.request.urlopen(request) as response:
+            with urllib.request.urlopen(url + str(500)) as response:
                 #For each line in response, decode it from binary to UTF-8 text
                 #and append to the output file
-                for line in response:
-                    line = line.decode("utf-8")
-                    file.write(line)
+                file.write(response.read().decode("utf-8"))
             #Wait for the proscribed amount of time before making another request (see the section above)
             time.sleep(delay)
     print("Done!")
